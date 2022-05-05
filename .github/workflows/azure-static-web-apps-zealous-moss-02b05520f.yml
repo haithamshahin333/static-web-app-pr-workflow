@@ -41,19 +41,18 @@ jobs:
     permissions:
       pull-requests: write
     name: PR Comment
-    # steps:
-    #   - name: PR Comment
-    #     uses: github-actions-up-and-running/pr-comment@v1.0.1
-    #     with:
-    #       repo-token: ${{ secrets.GITHUB_TOKEN }}
-    #       message: "${{needs.build_and_deploy_job.outputs.url}}"
-
     steps:
+    
       - uses: mshick/add-pr-comment@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           message: "${{needs.build_and_deploy_job.outputs.url}}"
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v2
+        with:
+          config: baseUrl=${{needs.build_and_deploy_job.outputs.url}}
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
