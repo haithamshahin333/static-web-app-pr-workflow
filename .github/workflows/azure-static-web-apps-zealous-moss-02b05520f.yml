@@ -14,6 +14,8 @@ jobs:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy Job
+    outputs:
+      url: ${{steps.builddeploy.outputs.static_web_app_url}}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -32,15 +34,17 @@ jobs:
           output_location: "build" # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
       
+  pr_comment:
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    needs: build_and_deploy_job
+    runs-on: ubuntu-latest
+    name: PR Comment
+    steps:
       - name: PR Comment
-        # You may pin to the exact commit or the version.
-        # uses: github-actions-up-and-running/pr-comment@f1f8ab2bf00dce6880a369ce08758a60c61d6c0b
         uses: github-actions-up-and-running/pr-comment@v1.0.1
         with:
-          # GITHUB_TOKEN secret
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          # Message to comment
-          message: "${{steps.builddeploy.outputs.static_web_app_url}}"
+          message: "${{needs.build_and_deploy_job.outputs.url}}"
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
