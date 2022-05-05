@@ -35,15 +35,22 @@ jobs:
           ###### End of Repository/Build Configurations ######
       
   pr_comment:
-    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
     needs: build_and_deploy_job
     runs-on: ubuntu-latest
     name: PR Comment
+    # steps:
+    #   - name: PR Comment
+    #     uses: github-actions-up-and-running/pr-comment@v1.0.1
+    #     with:
+    #       repo-token: ${{ secrets.GITHUB_TOKEN }}
+    #       message: "${{needs.build_and_deploy_job.outputs.url}}"
+
     steps:
-      - name: PR Comment
-        uses: github-actions-up-and-running/pr-comment@v1.0.1
+      - uses: mshick/add-pr-comment@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
           message: "${{needs.build_and_deploy_job.outputs.url}}"
 
   close_pull_request_job:
